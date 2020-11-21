@@ -2,7 +2,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-albums = [['Sleepless', 1999], ['Oxygen', 2000], ['Frozen', 2001], ['Monody', 2002], ['The Business', 2003],
+albums = [['Sleepless', 1999], ['Oxygen', 2000], ['Frozen', 2001], ['Monody', 2011], ['The Business', 2020],
           ['God Is A Dancer', 2009], ['Nothing Really Matters', 1978], ['5 Seconds Before Sunrise', 2018]]
 tracks = [['Love Goes On And On', 1984, 2.22, 1], ['Mercy Mirror', 1983, 3.21, 2], ['Oblivion', 1982, 4.09, 3],
           ['Primo Victoria', 1991, 2.16, 4], ['Commotion', 1985, 3.33, 5], ['Take You Down', 1989, 3.34, 6],
@@ -27,7 +27,7 @@ base = declarative_base()
 class Album(base):
     __tablename__ = 'Album'
 
-    id = Column(INTEGER, primary_key=True)
+    album_id = Column(INTEGER, primary_key=True)
     year = Column(NUMERIC(4, 0), nullable=False)
     name = Column(VARCHAR(100), nullable=False)
 
@@ -35,47 +35,47 @@ class Album(base):
 class Genre(base):
     __tablename__ = 'Genre'
 
-    id = Column(INTEGER, primary_key=True)
+    genre_id = Column(INTEGER, primary_key=True)
     name = Column(VARCHAR(35), nullable=False)
 
 
 class Track(base):
     __tablename__ = 'Track'
 
-    id = Column(INTEGER, primary_key=True)
+    track_id = Column(INTEGER, primary_key=True)
     year = Column(NUMERIC(4, 0), nullable=False)
     name = Column(VARCHAR(100), nullable=False)
     duration = Column(NUMERIC(3, 2), nullable=False)
-    album_id = Column(INTEGER, nullable=False)
+    album_id = Column(INTEGER, ForeignKey('Album.album_id'), nullable=False)
 
 
 class Performer(base):
     __tablename__ = 'Performer'
 
-    id = Column(INTEGER, primary_key=True)
+    performer_id = Column(INTEGER, primary_key=True)
     name = Column(VARCHAR(100), nullable=False, unique=True)
 
 
 class PerformerGenre(base):
     __tablename__ = 'Performer_Genre'
 
-    id = Column(INTEGER, primary_key=True)
-    performer_id = Column(INTEGER, nullable=False)
-    genre_id = Column(INTEGER, nullable=False)
+    performergenre_id = Column(INTEGER, primary_key=True)
+    performer_id = Column(INTEGER, ForeignKey('Performer.performer_id'), nullable=False)
+    genre_id = Column(INTEGER, ForeignKey('Genre.genre_id'), nullable=False)
 
 
 class PerformerAlbum(base):
     __tablename__ = 'Performer_Album'
 
-    id = Column(INTEGER, primary_key=True)
-    performer_id = Column(INTEGER, nullable=False)
-    album_id = Column(INTEGER, nullable=False)
+    performeralbum_id = Column(INTEGER, primary_key=True)
+    performer_id = Column(INTEGER, ForeignKey('Performer.performer_id'), nullable=False)
+    album_id = Column(INTEGER, ForeignKey('Album.album_id'), nullable=False)
 
 
 class Collection(base):
     __tablename__ = 'Collection'
 
-    id = Column(INTEGER, primary_key=True)
+    collection_id = Column(INTEGER, primary_key=True)
     year = Column(NUMERIC(4, 0), nullable=False)
     name = Column(VARCHAR(100), nullable=False)
 
@@ -83,9 +83,9 @@ class Collection(base):
 class CollectionTrack(base):
     __tablename__ = 'Collection_Track'
 
-    id = Column(INTEGER, primary_key=True)
-    collection_id = Column(INTEGER, nullable=False)
-    track_id = Column(INTEGER, nullable=False)
+    collectiontrack_id = Column(INTEGER, primary_key=True)
+    collection_id = Column(INTEGER, ForeignKey('Collection.collection_id'), nullable=False)
+    track_id = Column(INTEGER, ForeignKey('Track.track_id'), nullable=False)
 
 
 Session = sessionmaker(db)
@@ -111,6 +111,8 @@ for c in collections:
 for t in tracks:
     track = Track(name=t[0], year=t[1], duration=t[2], album_id=t[3])
     session.add(track)
+
+session.commit()
 
 for pg in performers_genres:
     perf_genre = PerformerGenre(performer_id=pg[0], genre_id=pg[1])
